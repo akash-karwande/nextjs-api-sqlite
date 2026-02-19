@@ -1,52 +1,30 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useActionState } from "react";
+import addCustomer from "./actions";
 
 export default function AddCustomerPage() {
     const router = useRouter();
 
-    const [formData, setFormData] = useState({
-        name: "",
-        email: "",
-        phone: "",
-        address: ""
-    });
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            const response = await fetch("/api/v1/customers", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(formData)
-            });
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const data = await response.json();
-            console.log("Customer added successfully:", data);
-            alert("Customer added successfully!");
-            setFormData({
-                name: "",
-                email: "",
-                phone: "",
-                address: ""
-            });
-
-            router.push("/customers")
-
-        } catch (error) {
-            console.error("Error adding customer:", error);
-        }
+    const initialState = {
+        message: '',
+        success: false,
     }
+
+    const [state, formAction, isPending] = useActionState(addCustomer, initialState)
 
     return (
         <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
             <div className="w-full max-w-lg bg-white rounded-2xl shadow-lg overflow-hidden">
 
+<div>
+                    <button className="mb-4 inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors duration-200"
+                        onClick={() => router.push("/customers")}
+                    >
+                        Go To Customers
+                    </button>
+                </div>
                 {/* Header */}
                 <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6">
                     <div className="flex items-center gap-3">
@@ -63,9 +41,16 @@ export default function AddCustomerPage() {
                 </div>
 
                 {/* Form */}
-                <form onSubmit={handleSubmit} className="px-8 py-7 space-y-5">
+                <form action={formAction} className="px-8 py-7 space-y-5">
 
-                    {/* Name */}
+                    {
+                        state.message && (
+                            <div className={`p-3 text-sm rounded ${state.success ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                                {state.message}
+                            </div>
+                        )
+                    }
+
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name</label>
                         <div className="relative">
@@ -77,8 +62,8 @@ export default function AddCustomerPage() {
                             <input
                                 type="text"
                                 placeholder="John Doe"
-                                value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                id="name"
+                                name="name"
                                 className="w-full pl-10 pr-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition placeholder-gray-400"
                             />
                         </div>
@@ -96,8 +81,8 @@ export default function AddCustomerPage() {
                             <input
                                 type="email"
                                 placeholder="john@example.com"
-                                value={formData.email}
-                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                id="email"
+                                name="email"
                                 className="w-full pl-10 pr-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition placeholder-gray-400"
                             />
                         </div>
@@ -115,8 +100,8 @@ export default function AddCustomerPage() {
                             <input
                                 type="tel"
                                 placeholder="+1 (555) 000-0000"
-                                value={formData.phone}
-                                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                id="phone"
+                                name="phone"
                                 className="w-full pl-10 pr-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition placeholder-gray-400"
                             />
                         </div>
@@ -135,8 +120,8 @@ export default function AddCustomerPage() {
                             <input
                                 type="text"
                                 placeholder="123 Main St, City, Country"
-                                value={formData.address}
-                                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                id="address"
+                                name="address"
                                 className="w-full pl-10 pr-4 py-2.5 text-sm text-gray-800 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition placeholder-gray-400"
                             />
                         </div>
@@ -145,10 +130,11 @@ export default function AddCustomerPage() {
                     {/* Submit Button */}
                     <div className="pt-2">
                         <button
+                            disabled={isPending}
                             type="submit"
                             className="w-full py-2.5 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-sm font-semibold hover:opacity-90 active:scale-[0.98] transition-all"
                         >
-                            Save Customer
+                            {isPending ? 'Adding...' : 'Add Customer'}
                         </button>
                     </div>
 
