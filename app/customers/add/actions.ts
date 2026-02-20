@@ -2,7 +2,15 @@
 
 import { createCustomer } from "@/services/customerService";
 
-export default async function addCustomer(prevState: any, formData: FormData) {
+type AddCustomerState = {
+    message: string;
+    success: boolean;
+};
+
+export default async function addCustomer(
+    _prevState: AddCustomerState,
+    formData: FormData
+) {
     try {
         const name = formData.get("name") as string;
         const email = formData.get("email") as string;
@@ -19,7 +27,7 @@ export default async function addCustomer(prevState: any, formData: FormData) {
             message: 'Customer added with id ' + result.id,
             success: true
         }
-    } catch (error) {
+    } catch {
         return {
             message: "Failed to add customer",
             success: false
